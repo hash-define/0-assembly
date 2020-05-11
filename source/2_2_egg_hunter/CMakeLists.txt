@@ -6,7 +6,7 @@ nasm_assemble(
 )
 add_custom_target(2_2_egg_hunter_shellcode DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/shellcode.bin)
 add_custom_command(TARGET 2_2_egg_hunter_shellcode POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/shellcode.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shellcode.bin")
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/shellcode.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/shellcode.bin")
 
 # Exercise
 nasm_assemble(
