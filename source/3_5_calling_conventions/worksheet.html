@@ -1,0 +1,718 @@
+<html>
+    <head>
+        <title>Calling Conventions Worksheet</title>
+        <style>
+            body {
+                padding: 20px;
+            }
+            form {
+                border: 1px solid black;
+            }
+            
+            form > label:nth-child(even) > div {
+                background-color: #cccccc;
+            }
+
+            article h4 {
+                border-top: 2px solid #bbb;
+                padding-top: 20px;
+            }
+
+            form > label > div {
+                border-bottom: 1px solid black;
+            }
+
+            input[type=submit] {
+                margin: 20px;
+            }
+
+            label > div > pre {
+                display: inline;
+            }
+
+            pre {
+                margin: 0px;
+                padding: 0px;
+            }
+
+            section {
+                border-bottom: 2px solid black;
+                padding: 50px 0px;
+            }
+
+            pre:before {
+                counter-reset: listing;
+            }
+
+            pre code {
+                counter-increment: listing;
+            }
+
+            section > pre code::before {
+                content: counter(listing) ". ";
+                display: inline-block;
+                width: 100px;
+                margin-right: 20px;
+                border-right: 1px solid #444444;
+                color: #444444;
+                text-align: right;
+            }
+
+            .hint > span:first-child {
+                font-weight: bold;
+                padding-right: 10px;
+            }
+
+            .hint {
+                display: none;
+                padding: 5px 0px;
+            }
+
+            .show {
+                display: block;
+            }
+
+            .wrong {
+                background-color: #EA4646 !important;
+            }
+
+            .right > pre:after {
+                content: "\2714";
+                font-weight: bold;
+                font-size: 2em;
+                margin-left: 10px;
+            }
+
+            .wrong > pre:after {
+                content: "\2718";
+                font-weight: bold;
+                font-size: 2em;
+                margin-left: 10px;
+            }
+
+            .right {
+                background-color: #73c991 !important;
+            }
+        </style>
+        <script type="text/javascript">
+            "use strict";
+
+            var get_hint = function(elem)
+            {
+                var parent = elem.parentNode;
+                var nextHint = parent.querySelector("div.hint:not(.show)");
+                if (nextHint)
+                {
+                    nextHint.classList.add("show");
+                }
+            };
+
+            var check = function(event)
+            {
+                var form = event.target;
+                var checked = form.querySelector("input:checked");
+                if (checked && checked.classList.contains("correct"))
+                {
+                    // correct
+                    checked.parentNode.classList.add("right");
+                }
+                else if (checked)
+                {
+                    // incorrect
+                    checked.parentNode.classList.add("wrong");
+                }
+
+                // Stop event propogation
+                return false;
+            };
+
+            var add_submit_behavior = function()
+            {
+                var forms = document.querySelectorAll("form");
+                for (var i = 0; i < forms.length; i++)
+                {
+                    forms[i].onsubmit = check;
+                }
+            };
+        </script>
+    </head>
+    <body>
+        <section>
+            <article>
+                <h3>Calling Conventions</h3>
+                <h4>fastcall: ecx and edx registers</h4>
+                <p>There are a large number of calling conventions that use registers to pass arguments. Registers are desirable because they are fast and easy to use. Loading values into registers can be readily pipelined and reordered by the CPU because they have no interdependence.</p>
+                <p>Most of the calling conventions that use registers call themselves "fastcall". So the name "fastcall" does not uniquely identify a single calling convention. For this exercise we will be using a Microsoft specific "fastcall" where the first argument is in ecx and the second edx.</p>
+                <h4>stdcall: stack and callee cleanup</h4>
+                <p>Arguments are passed via the stack in reverse order such that they are last-in, first-out.</p>
+                <p>The callee is responsible for cleaning up the arguments passed to the function. This is achieved by a "ret" instruction with a constant. The constant is the number of bytes to add to esp after returning.</p>
+                <p>Stdcall is easy to write but because it makes use of "push" for passing arguments the CPU cannot reorder or pipeline the pushes. For this reason, it is discouraged by Intel.</p>
+                <p>Stdcall is the calling convention used by Windows for their APIs.</p>
+                <h4>cdecl: stack and caller cleanup</h4>
+                <p>Similar to stdcall, arguments are passed via the stack in reverse order.</p>
+                <p>Unlike stdcall, cdecl is caller cleanup.</p>
+                <p>Passing arguments to cdecl functions can be done with push, but a corresponding "pop" or addition to esp will be needed to "undo the pushes". Alternatively, the caller can preallocate space for arguments during the prologue and the cleanup can be performed implicitly during the epilogue. Arguments are then passed via "mov" instructions instead or "push". This allows them to be reordered and pipelined.</p>
+                <p>The cdecl calling convention also supports functions with a variable number of arguments like printf.</p>
+                <p>The optimized version of cdecl using "mov" is the calling convention used by most modern C compilers when not interacting with the Windows API.</p>
+            </article>
+        </section>
+        <section>
+            <header>
+                <h4>1. For the function below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>sum:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code></code>
+                <code>    mov eax, dword [ebp+0x08]</code>
+                <code>    add eax, dword [ebp+0x0C]</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret 8</code>
+            </pre>
+            <form>
+                <label for="q1-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q1" id="q1-stdcall" class="correct">
+                        <pre><code>int __stdcall sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q1-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q1" id="q1-cdecl">
+                        <pre><code>int __cdecl sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q1-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q1" id="q1-fastcall">
+                        <pre><code>int __fastcall sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q1-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q1" id="q1-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                <button onclick="get_hint(this)">Get Hint</button>
+                <div class="hint">
+                    <span>Hint 1/5:</span><span>How are arguments passed to this function? Via the stack or via registers?</span>
+                </div>
+                <div class="hint">
+                    <span>Hint 2/5:</span><span>Lines 6 and 7 are retrieving arguments relative to EBP. This means arguments are passed via the stack. Therefore, this must be either stdcall or cdecl.</span>
+                </div>
+                <div class="hint">
+                    <span>Hint 3/5:</span><span>stdcall is callee cleanup and cdecl is caller cleanup.</span>
+                </div>
+                <div class="hint">
+                    <span>Hint 4/5:</span><span>Callee cleanup functions with arguments will have a ret instruction with a constant. This operand indicates how much to add to ESP to cleanup the arguments.</span>
+                </div>
+                <div class="hint">
+                    <span>Hint 5/5:</span><span>stdcall is the correct answer because line 12 has a ret instruction that is cleaning up 8 bytes from the stack and we know there are 2 int arguments from lines 6 and 7.</span>
+                </div>
+            </div>
+        </section>
+        <section>
+            <header>
+                <h4>2. For the function CALL on line 8 below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>main:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code></code>
+                <code>    push 2</code>
+                <code>    push 1</code>
+                <code>    call sum</code>
+                <code>    add esp, 8</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov eax, EXIT_SUCCESS</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret</code>
+            </pre>
+            <form>
+                <label for="q2-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q2" id="q2-stdcall">
+                        <pre><code>int __stdcall sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q2-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q2" id="q2-cdecl" class="correct">
+                        <pre><code>int __cdecl sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q2-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q2" id="q2-fastcall">
+                        <pre><code>int __fastcall sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q2-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q2" id="q2-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                    <button onclick="get_hint(this)">Get Hint</button>
+                    <div class="hint">
+                        <span>Hint 1/5:</span><span>How are arguments passed to the call? Via the stack or via registers?</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 2/5:</span><span>Lines 6 and 7 are pushing arguments to the stack. Therefore, this must be either stdcall or cdecl.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 3/5:</span><span>stdcall is callee cleanup and cdecl is caller cleanup.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 4/5:</span><span>Caller cleanup calls will be followed by code to "undo" the pushes to the stack.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 5/5:</span><span>Cdecl is the correct answer because line 9 undoes the pushes from lines 6 and 7.</span>
+                    </div>
+                </div>
+        </section>
+        <section>
+            <header>
+                <h4>3. For the function CALL on line 8 below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>main:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code></code>
+                <code>    mov ecx, 1</code>
+                <code>    mov edx, 2</code>
+                <code>    call sum</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov eax, EXIT_SUCCESS</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret</code>
+            </pre>
+            <form>
+                <label for="q3-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q3" id="q3-stdcall">
+                        <pre><code>int __stdcall sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q3-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q3" id="q3-cdecl">
+                        <pre><code>int __cdecl sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q3-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q3" id="q3-fastcall" class="correct">
+                        <pre><code>int __fastcall sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q3-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q3" id="q3-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                    <button onclick="get_hint(this)">Get Hint</button>
+                    <div class="hint">
+                        <span>Hint 1/2:</span><span>How are arguments passed to the call? Via the stack or via registers?</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 2/2:</span><span>Fastcall is the correct answer because lines 6 and 7 are passing arguments via registers.</span>
+                    </div>
+                </div>
+        </section>
+        <section>
+            <header>
+                <h4>4. For the function below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>bit_mask:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code></code>
+                <code>    and ecx, edx</code>
+                <code>    mov eax, ecx</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret</code>
+            </pre>
+            <form>
+                <label for="q4-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q4" id="q4-stdcall">
+                        <pre><code>int __stdcall bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q4-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q4" id="q4-cdecl">
+                        <pre><code>int __cdecl bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q4-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q4" id="q4-fastcall" class="correct">
+                        <pre><code>int __fastcall bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q4-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q4" id="q4-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                    <button onclick="get_hint(this)">Get Hint</button>
+                    <div class="hint">
+                        <span>Hint 1/2:</span><span>How are arguments passed to the function? Via the stack or via registers?</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 2/2:</span><span>Fastcall is the correct answer because line 6 utilizes registers ecx and edx without initializing them. You can therefore assume that their value must have been passed in as arguments.</span>
+                    </div>
+                </div>
+        </section>
+        
+        <section>
+            <header>
+                <h4>5. For the function CALL on line 9 below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>main:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code>    sub esp, 8</code>
+                <code></code>
+                <code>    mov [esp], 1</code>
+                <code>    mov [esp+0x04], 2</code>
+                <code>    call sum</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov eax, EXIT_SUCCESS</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret</code>
+            </pre>
+            <form>
+                <label for="q6-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q6" id="q6-stdcall">
+                        <pre><code>int __stdcall sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q6-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q6" id="q6-cdecl" class="correct">
+                        <pre><code>int __cdecl sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q6-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q6" id="q6-fastcall">
+                        <pre><code>int __fastcall sum(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q6-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q6" id="q6-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                    <button onclick="get_hint(this)">Get Hint</button>
+                    <div class="hint">
+                        <span>Hint 1/4:</span><span>How are arguments passed to the call? Via the stack or via registers?</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 2/4:</span><span>On lines 7 and 8, arguments are being moved onto the stack. So it must be either stdcall or cdecl.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 3/4:</span><span>To distinguish between stdcall and cdecl we must look at who is doing the cleanup. This one is particularly tricky because the cleanup is not obvious.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 4/4:</span><span>On line 5, stack space is being allocated and during the epilogue it is cleaned-up. This is an optimized version of the cdecl calling convention using mov instead of push and as a result there is no "per-call" cleanup but the caller is still cleaning up the stack. Thus, the answer is cdecl.</span>
+                    </div>
+                </div>
+        </section>
+        <section>
+            <header>
+                <h4>6. For the function below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>bit_mask:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code></code>
+                <code>    mov eax, dword [ebp+0x08]</code>
+                <code>    and eax, dword [ebp+0x0C]</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret</code>
+            </pre>
+            <form>
+                <label for="q7-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q7" id="q7-stdcall">
+                        <pre><code>int __stdcall bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q7-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q7" id="q7-cdecl" class="correct">
+                        <pre><code>int __cdecl bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q7-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q7" id="q7-fastcall">
+                        <pre><code>int __fastcall bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q7-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q7" id="q7-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                    <button onclick="get_hint(this)">Get Hint</button>
+                    <div class="hint">
+                        <span>Hint 1/4:</span><span>How are arguments passed to the function? Via the stack or via registers?</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 2/4:</span><span>Lines 6 and 7 are retrieving arguments from the stack relative to EBP. Therefore is must be either cdecl or stdcall.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 3/4:</span><span>Cdecl is caller cleanup and stdcall is callee cleanup. Callee cleanup functions have a ret instruction with a constant operand.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 4/4:</span><span>There is no constant on the ret instruction on line 12, and therefore the callee is not cleaning up. It must be cdecl.</span>
+                    </div>
+                </div>
+        </section>
+        <section>
+            <header>
+                <h4>7. For the function below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>bit_mask:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code></code>
+                <code>    mov eax, dword [ebp+0x08]</code>
+                <code>    and eax, dword [ebp+0x0C]</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret 8</code>
+            </pre>
+            <form>
+                <label for="q8-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q8" id="q8-stdcall" class="correct">
+                        <pre><code>int __stdcall bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q8-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q8" id="q8-cdecl">
+                        <pre><code>int __cdecl bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q8-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q8" id="q8-fastcall">
+                        <pre><code>int __fastcall bitmask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q8-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q8" id="q8-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                    <button onclick="get_hint(this)">Get Hint</button>
+                    <div class="hint">
+                        <span>Hint 1/4:</span><span>How are arguments passed to the function? Via the stack or via registers?</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 2/4:</span><span>Lines 6 and 7 are retrieving arguments from the stack relative to EBP. Therefore is must be either cdecl or stdcall.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 3/4:</span><span>Cdecl is caller cleanup and stdcall is callee cleanup. Callee cleanup functions have a ret instruction with a constant operand.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 4/4:</span><span>The ret instruction is followed by a constant on line 12 which is cleaning up the arguments. Therefore this is callee cleanup and stdcall.</span>
+                    </div>
+                </div>
+        </section>
+        <section>
+            <header>
+                <h4>8. For the function CALL on line 8 below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>main:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code></code>
+                <code>    push 0x0F</code>
+                <code>    push 0xAA</code>
+                <code>    call bit_mask</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov eax, EXIT_SUCCESS</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret</code>
+            </pre>
+            <form>
+                <label for="q9-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q9" id="q9-stdcall" class="correct">
+                        <pre><code>int __stdcall bit_mask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q9-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q9" id="q9-cdecl">
+                        <pre><code>int __cdecl bit_mask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q9-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q9" id="q9-fastcall">
+                        <pre><code>int __fastcall bit_mask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q9-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q9" id="q9-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                    <button onclick="get_hint(this)">Get Hint</button>
+                    <div class="hint">
+                        <span>Hint 1/5:</span><span>How are arguments passed to the call? Via the stack or via registers?</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 2/5:</span><span>Lines 6 and 7 are pushing arguments to the stack. Therefore, this must be either stdcall or cdecl.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 3/5:</span><span>stdcall is callee cleanup and cdecl is caller cleanup.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 4/5:</span><span>Caller cleanup calls will be followed by code to "undo" the pushes to the stack.</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 5/5:</span><span>Stdcall is the correct answer because there is no stack cleanup and therefore the callee must be cleaning up the stack.</span>
+                    </div>
+                </div>
+        </section>
+        <section>
+            <header>
+                <h4>9. For the function CALL on line 8 below, select the correct method signature:</h4>
+            </header>
+            <pre>
+                <code>main:</code>
+                <code>.prologue:</code>
+                <code>    push ebp</code>
+                <code>    mov ebp, esp</code>
+                <code></code>
+                <code>    mov ecx, 0xAA</code>
+                <code>    mov edx, 0x55</code>
+                <code>    call bit_mask</code>
+                <code></code>
+                <code>.epilogue:</code>
+                <code>    mov eax, EXIT_SUCCESS</code>
+                <code>    mov esp, ebp</code>
+                <code>    pop ebp</code>
+                <code>    ret</code>
+            </pre>
+            <form>
+                <label for="q5-stdcall">
+                    <div>
+                        <input type="radio" value="stdcall" name="q5" id="q5-stdcall">
+                        <pre><code>int __stdcall bit_mask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q5-cdecl">
+                    <div>
+                        <input type="radio" value="cdecl" name="q5" id="q5-cdecl">
+                        <pre><code>int __cdecl bit_mask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q5-fastcall">
+                    <div>
+                        <input type="radio" value="fastcall" name="q5" id="q5-fastcall" class="correct">
+                        <pre><code>int __fastcall bit_mask(int a, int b);</code></pre>
+                    </div>
+                </label>
+                <label for="q5-unknown">
+                    <div>
+                        <input type="radio" value="unknown" name="q5" id="q5-unknown">
+                        <pre><code>Unable to determine.</code></pre>
+                    </div>
+                </label>
+                <input type="submit" value="Check">
+            </form>
+            <div>
+                    <button onclick="get_hint(this)">Get Hint</button>
+                    <div class="hint">
+                        <span>Hint 1/2:</span><span>How are arguments passed to the call? Via the stack or via registers?</span>
+                    </div>
+                    <div class="hint">
+                        <span>Hint 2/2:</span><span>Fastcall is the correct answer because lines 6 and 7 are passing arguments via registers.</span>
+                    </div>
+                </div>
+        </section>
+        <script type="text/javascript">
+            (function() {
+                add_submit_behavior();
+            })();
+        </script>
+    </body>
+</html>

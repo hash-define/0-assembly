@@ -1,0 +1,11 @@
+add_subdirectory(1_1_hello_world)
+add_subdirectory(1_2_stack_challenge)
+add_subdirectory(2_1_assembly)
+add_subdirectory(2_2_egg_hunter)
+add_subdirectory(3_1_stack_discipline)
+add_subdirectory(3_2_local_variables)
+add_subdirectory(3_3_local_buffer)
+add_subdirectory(3_4_preservation)
+#add_subdirectory(3_5_calling_conventions)
+add_subdirectory(4_1_all_together)
+
