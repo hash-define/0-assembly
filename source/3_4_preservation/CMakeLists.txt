@@ -8,10 +8,10 @@ nasm_assemble(
         "--prefix" "_"
 )
 
-add_executable(3_3_preservation ${CMAKE_CURRENT_BINARY_DIR}/preservation.obj ${CMAKE_CURRENT_SOURCE_DIR}/source/preservation.asm)
-set_target_properties(3_3_preservation PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(3_3_preservation PROPERTIES LINK_FLAGS "/ENTRY:main /NODEFAULTLIB")
-target_link_libraries(3_3_preservation srelib)
+add_executable(3_4_preservation ${CMAKE_CURRENT_BINARY_DIR}/preservation.obj ${CMAKE_CURRENT_SOURCE_DIR}/source/preservation.asm)
+set_target_properties(3_4_preservation PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(3_4_preservation PROPERTIES LINK_FLAGS "/ENTRY:main /NODEFAULTLIB")
+target_link_libraries(3_4_preservation srelib)
 
 # Solution
 nasm_assemble(
@@ -23,7 +23,7 @@ nasm_assemble(
         "--prefix" "_"
 )
 
-add_executable(3_3_preservation_solution ${CMAKE_CURRENT_BINARY_DIR}/preservation_solution.obj ${CMAKE_CURRENT_SOURCE_DIR}/solution/preservation.asm)
-set_target_properties(3_3_preservation_solution PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(3_3_preservation_solution PROPERTIES LINK_FLAGS "/ENTRY:main /NODEFAULTLIB")
-target_link_libraries(3_3_preservation_solution srelib)
+add_executable(3_4_preservation_solution ${CMAKE_CURRENT_BINARY_DIR}/preservation_solution.obj ${CMAKE_CURRENT_SOURCE_DIR}/solution/preservation.asm)
+set_target_properties(3_4_preservation_solution PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(3_4_preservation_solution PROPERTIES LINK_FLAGS "/ENTRY:main /NODEFAULTLIB")
+target_link_libraries(3_4_preservation_solution srelib)
