@@ -12,7 +12,7 @@ global negate
 global subtract
 global multiply
 global divide
-global remainder
+global my_remainder
 
 increment:
     prologue
@@ -79,7 +79,7 @@ divide:
     epilogue
     ret
 
-remainder:
+my_remainder:
     prologue
 
     ; "eax" contains first value

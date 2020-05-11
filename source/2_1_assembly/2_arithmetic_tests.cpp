@@ -9,7 +9,7 @@ extern "C" int __cdecl negate(int x);
 extern "C" int __cdecl subtract(int a, int b);
 extern "C" int __cdecl multiply(int a, int b);
 extern "C" int __cdecl divide(int a, int b);
-extern "C" int __cdecl remainder(int a, int b);
+extern "C" int __cdecl my_remainder(int a, int b);
 
 TEST(AssemblyArithmetic, Increment)
 {
@@ -66,9 +66,9 @@ TEST(AssemblyArithmetic, Divide)
     ASSERT_EQ(1, divide(3,2));
 }
 
-TEST(AssemblyArithmetic, Remainder)
+TEST(AssemblyArithmetic, my_remainder)
 {
-    ASSERT_EQ(0, remainder(0, 1));
-    ASSERT_EQ(1, remainder(3,2));
-    ASSERT_EQ(2, remainder(5,3));
+    ASSERT_EQ(0, my_remainder(0, 1));
+    ASSERT_EQ(1, my_remainder(3,2));
+    ASSERT_EQ(2, my_remainder(5,3));
 }
