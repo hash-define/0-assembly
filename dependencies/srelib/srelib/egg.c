@@ -62,11 +62,11 @@ SreLibPrepareEgg
         // zero around for ease of reading
         for (i = 0; i < offset; i++)
         {
-            (*buffer)[i] = 0; 
+            (*buffer)[i] = 0xCC; 
         }
         for (i = 0; i < slack - offset; i++)
         {
-            (*buffer)[offset+i+EGG_SIZE+shellcode_length] = 0;
+            (*buffer)[offset+i+EGG_SIZE+shellcode_length] = 0xCC;
         }
 
     }
